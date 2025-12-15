@@ -9,9 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@zxing/library": "^0.21.3",
+    "firebase": "^12.6.0",
     "next": "16.0.10",
     "react": "19.2.1",
-    "react-dom": "19.2.1"
+    "react-dom": "19.2.1",
+    "react-hot-toast": "^2.6.0",
+    "react-qr-barcode-scanner": "^2.1.19"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
