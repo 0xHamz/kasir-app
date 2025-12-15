@@ -18,6 +18,10 @@ type Product = {
 export default function KasirPage() {
   const [role, setRole] = useState<string>("");
   const [loading, setLoading] = useState(true);
+
+  // 🔥 TAMBAHKAN DI SINI
+  const [cameraReady, setCameraReady] = useState(false);
+  
   const [cart, setCart] = useState<Product[]>([]);
   const [barcodeInput, setBarcodeInput] = useState("");
   const router = useRouter();
@@ -25,40 +29,45 @@ export default function KasirPage() {
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-  // cek role dan fokus barcode
   const checkRole = async () => {
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+  
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const r = snap.data()?.role;
+  
+        if (r !== "kasir") {
+          alert("Tidak punya akses");
+          router.push("/login");
+          return;
+        }
+  
+        setRole(r);
+        localStorage.setItem("role", r);
+        setLoading(false);
+        barcodeRef.current?.focus();
+  
+        // 🔥 MINTA IZIN KAMERA
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  
+          // langsung stop stream, hanya untuk permission
+          stream.getTracks().forEach(t => t.stop());
+  
+          // ✅ tandai kamera siap
+          setCameraReady(true);
+        } catch {
+          alert("Izin kamera ditolak atau tidak tersedia");
+        }
+      });
+    };
+  
+    checkRole();
+  }, [router]);
 
-      const snap = await getDoc(doc(db, "users", user.uid));
-      const r = snap.data()?.role;
-
-      if (r !== "kasir") {
-        alert("Tidak punya akses");
-        router.push("/login");
-        return;
-      }
-
-      setRole(r);
-      localStorage.setItem("role", r);
-      setLoading(false);
-      barcodeRef.current?.focus();
-
-      // 🔹 langsung minta akses kamera
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        console.log("Akses kamera diberikan");
-      } catch (err) {
-        alert("Tidak dapat mengakses kamera. Pastikan halaman dibuka lewat HTTPS dan izinkan kamera.");
-      }
-    });
-  };
-
-  checkRole();
-}, [router]);
 
 
   const addProductToCart = (product: Product) => {
