@@ -117,7 +117,14 @@ export default function KasirPage() {
             <h1 className="text-2xl font-bold text-gray-800 text-center mb-4">Scan Barcode</h1>
 
             {/* CAMERA SCANNER */}
-            <MultiCameraScanner onScan={handleScan} />
+            {cameraReady ? (
+              <MultiCameraScanner onScan={handleScan} />
+            ) : (
+              <p className="text-center text-sm text-gray-500">
+                Menunggu izin kamera...
+              </p>
+            )}
+
 
             <hr className="border-b border-black" />
 
