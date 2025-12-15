@@ -25,30 +25,41 @@ export default function KasirPage() {
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const checkRole = async () => {
-      auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-          router.push("/login");
-          return;
-        }
+  // cek role dan fokus barcode
+  const checkRole = async () => {
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
-        const snap = await getDoc(doc(db, "users", user.uid));
-        const r = snap.data()?.role;
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const r = snap.data()?.role;
 
-        if (r !== "kasir") {
-          alert("Tidak punya akses");
-          router.push("/login");
-          return;
-        }
+      if (r !== "kasir") {
+        alert("Tidak punya akses");
+        router.push("/login");
+        return;
+      }
 
-        setRole(r);
-        localStorage.setItem("role", r);
-        setLoading(false);
-        barcodeRef.current?.focus();
-      });
-    };
-    checkRole();
-  }, [router]);
+      setRole(r);
+      localStorage.setItem("role", r);
+      setLoading(false);
+      barcodeRef.current?.focus();
+
+      // 🔹 langsung minta akses kamera
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        console.log("Akses kamera diberikan");
+      } catch (err) {
+        alert("Tidak dapat mengakses kamera. Pastikan halaman dibuka lewat HTTPS dan izinkan kamera.");
+      }
+    });
+  };
+
+  checkRole();
+}, [router]);
+
 
   const addProductToCart = (product: Product) => {
     setCart(prev => [...prev, product]);
